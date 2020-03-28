@@ -15,7 +15,7 @@ for arg in "$@"; do
 		--ca-home) home="${value}";;
 		--ca-cert) ca_name="${value}";;
 
-		--cn) common_name="${value}";;
+		-cn) common_name="${value}";;
 
 		*)
 			echo "Unknown Argument ${key}" >&2;

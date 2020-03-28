@@ -19,11 +19,11 @@ for arg in "$@"; do
 		--domain) domain="${value}";;
 		--ca-home) home="${value}";;
 
-		--c) country="${value}";;
-		--st) province="${value}";;
-		--l) city="${value}";;
-		--o) organization="${value}";;
-		--cn) common_name="${value}";;
+		-c) country="${value}";;
+		-st) province="${value}";;
+		-l) city="${value}";;
+		-o) organization="${value}";;
+		-cn) common_name="${value}";;
 
 		*)
 			echo "Unknown Argument ${key}" >&2;
