@@ -2,6 +2,7 @@
 
 home=./data
 ca_name="current"
+group="constructing"
 
 common_name=""
 
@@ -14,6 +15,7 @@ for arg in "$@"; do
 	case "${key}" in
 		--ca-home) home="${value}";;
 		--ca-cert) ca_name="${value}";;
+		--group) group="${value}";;
 
 		-cn) common_name="${value}";;
 
@@ -32,7 +34,7 @@ fi
 
 file_name=$(echo ${common_name} | sed -E -e 's/( |\.)/_/g')
 ca_file_name=$(echo ${ca_name} | sed -E -e 's/( |\.)/_/g')
-dir="${home}/constructing"
+dir="${home}/${group}"
 
 subject=$(
 	openssl x509 -in ${home}/private/${ca_file_name}.ca.cert -subject -noout \
