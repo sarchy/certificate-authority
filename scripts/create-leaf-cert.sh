@@ -1,10 +1,11 @@
-#! /usr/bin/env sh
+#! /usr/bin/env bash
 
 home=./data
 ca_name="current"
 group="constructing"
 
 common_name=""
+altnames=()
 
 for arg in "$@"; do
 	key="${arg%%=*}"
@@ -18,6 +19,7 @@ for arg in "$@"; do
 		--group) group="${value}";;
 
 		-cn) common_name="${value}";;
+		--alt) altnames+=("${value}");;
 
 		*)
 			echo "Unknown Argument ${key}" >&2;
@@ -26,6 +28,7 @@ for arg in "$@"; do
 done
 
 common_name=${1:-"${common_name}"}
+altnames=("${common_name}" "${altnames[@]}")
 
 if [ -z "${common_name}" ]; then
 	echo "No common name provided" >&2;
@@ -35,6 +38,11 @@ fi
 file_name=$(echo ${common_name} | sed -E -e 's/( |\.)/_/g')
 ca_file_name=$(echo ${ca_name} | sed -E -e 's/( |\.)/_/g')
 dir="${home}/${group}"
+
+config_file_name="${home}/openssl.cnf"
+if [[ "${#altnames[@]}" -gt 1 ]]; then
+	config_file_name="${dir}/${file_name}.cnf";
+fi
 
 subject=$(
 	openssl x509 -in ${home}/private/${ca_file_name}.ca.cert -subject -noout \
@@ -47,7 +55,7 @@ echo ""
 
 [ -d ${dir} ] || mkdir -p ${dir}
 
-cat > ${dir}/${file_name}.star.cnf <<-EOF
+[[ "${#altnames[@]}" -gt 1 ]] && cat > "${config_file_name}" <<-EOF
 	######################################################################################
 	# This is where we define how to generate CSRs
 	#
@@ -70,31 +78,34 @@ cat > ${dir}/${file_name}.star.cnf <<-EOF
 	# Additional alternative names
 	#
 	[ altnames ]
-	DNS.1 = ${common_name}
-	DNS.2 = *.${common_name}
+	$(
+		for i in ${!altnames[@]}; do
+			echo "DNS.${i} = ${altnames[i]}"
+		done
+	)
 EOF
 
-[ -f "${dir}/${file_name}.star.key" ] || openssl genrsa \
-	-aes256 -out "${dir}/${file_name}.star.key" \
+[ -f "${dir}/${file_name}.key" ] || openssl genrsa \
+	-aes256 -out "${dir}/${file_name}.key" \
 	-passout "pass:${password}" \
 	2048
 
-[ -f "${dir}/${file_name}.star.csr" ] || openssl req -new -config "${dir}/${file_name}.star.cnf" \
-	-key "${dir}/${file_name}.star.key" -out "${dir}/${file_name}.star.csr" \
+[ -f "${dir}/${file_name}.csr" ] || openssl req -new -config "${config_file_name}" \
+	-key "${dir}/${file_name}.key" -out "${dir}/${file_name}.csr" \
 	-passin "pass:${password}" -passout "pass:${password}" \
 	-subj "${subject}"
 
-[ -f "${dir}/${file_name}.star.cert" ] || openssl ca -config "${home}/openssl.cnf" \
+[ -f "${dir}/${file_name}.cert" ] || openssl ca -config "${home}/openssl.cnf" \
 	-cert "${home}/private/${ca_file_name}.ca.cert" \
 	-keyfile "${home}/private/${ca_file_name}.ca.key" \
 	-passin "pass:${password}" \
 	-extensions usr_cert_has_san -days 365 \
-	-out "${dir}/${file_name}.star.cert" \
-	-infiles "${dir}/${file_name}.star.csr"
+	-out "${dir}/${file_name}.cert" \
+	-infiles "${dir}/${file_name}.csr"
 
-if ! [ -f "${dir}/${file_name}.star.chain" ]; then
-	> ${dir}/${file_name}.star.chain
-	current="${dir}/${file_name}.star.cert";
+if ! [ -f "${dir}/${file_name}.chain" ]; then
+	> ${dir}/${file_name}.chain
+	current="${dir}/${file_name}.cert";
 	while true; do
 		issuer=$(grep -i 'Issuer: ' "${current}" | sed -e 's/^.*Issuer: /Subject: /')
 		subject=$(grep -i 'Subject: ' "${current}" | sed -e 's/^.*Subject: /Subject: /')
@@ -102,12 +113,12 @@ if ! [ -f "${dir}/${file_name}.star.chain" ]; then
 		if [ "${issuer}" = "${subject}" ]; then break; fi
 
 		current=$(grep -i "${issuer}" "${home}/certsdb/"* | sed -e 's/^\([^:]*\):.*$/\1/')
-		cat "${current}" >> "${dir}/${file_name}.star.chain"
+		cat "${current}" >> "${dir}/${file_name}.chain"
 	done
 fi
 
-[ -f "${dir}/${file_name}.star.p12" ] || openssl pkcs12 -export -name "${file_name}" \
-	-inkey "${dir}/${file_name}.star.key" -in "${dir}/${file_name}.star.cert" \
-	-certfile "${dir}/${file_name}.star.chain" \
+[ -f "${dir}/${file_name}.p12" ] || openssl pkcs12 -export -name "${file_name}" \
+	-inkey "${dir}/${file_name}.key" -in "${dir}/${file_name}.cert" \
+	-certfile "${dir}/${file_name}.chain" \
 	-passin "pass:${password}" -passout "pass:${password}" \
-	-out "${dir}/${file_name}.star.p12"
+	-out "${dir}/${file_name}.p12"

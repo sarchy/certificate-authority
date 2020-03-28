@@ -1,4 +1,4 @@
-#! /usr/bin/env sh
+#! /usr/bin/env bash
 
 function ask () {
 	if ! [ -z "${!1}" ]; then return; fi
