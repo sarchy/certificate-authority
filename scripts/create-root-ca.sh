@@ -1,13 +1,27 @@
 #! /usr/bin/env sh
 
+function ask () {
+	if ! [ -z "${!1}" ]; then return; fi
+
+	printf "${3} [${2}]: ";
+	read "${1}";
+
+	if [ -z "${!1}" ]; then eval ${1}=\${2}; fi
+
+	if [ -z "${!1}" ]; then
+		echo "Value for ${1} cannot be empyt" >&2;
+		exit 1;
+	fi
+}
+
 domain=example.com
 home=./data
 
-country="BE"
-province="Limburg"
-city="Sint-Truiden"
-organization="Crossroad Communications NV."
-common_name="ROOT CERT G1"
+country=""
+province=""
+city=""
+organization=""
+common_name=""
 
 for arg in "$@"; do
 	key="${arg%%=*}"
@@ -30,6 +44,13 @@ for arg in "$@"; do
 			exit 1;
 	esac
 done
+
+ask domain "" "CA Hosting Domain"
+ask country "BE" "Country Name (2 letter code)"
+ask province "Limburg" "State or Province Name (full name)"
+ask city "Sint-Truiden" "Locality Name (eg, city)"
+ask organization "" "Organization Name (eg, company):"
+ask common_name "ROOT CERT G1" "Common Name (eg, YOUR name)"
 
 domain=${1:-"${domain}"}
 subject="/C=${country}/ST=${province}/L=${city}/O=${organization}/CN=${common_name}"
