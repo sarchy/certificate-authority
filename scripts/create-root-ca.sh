@@ -4,7 +4,11 @@ function ask () {
 	if ! [ -z "${!1}" ]; then return; fi
 
 	printf "${3} [${2}]: ";
-	read "${1}";
+	if [ "${1}" = "password" ]; then
+		read -s "${1}";
+	else
+		read "${1}";
+	fi
 
 	if [ -z "${!1}" ]; then eval ${1}=\${2}; fi
 
@@ -51,6 +55,7 @@ ask province "Limburg" "State or Province Name (full name)"
 ask city "Sint-Truiden" "Locality Name (eg, city)"
 ask organization "" "Organization Name (eg, company):"
 ask common_name "ROOT CERT G1" "Common Name (eg, YOUR name)"
+ask password "" "Main Ca Password"
 
 domain=${1:-"${domain}"}
 subject="/C=${country}/ST=${province}/L=${city}/O=${organization}/CN=${common_name}"
@@ -268,14 +273,19 @@ EOF
 
 dir="${home}/private"
 
-[ -f "${dir}/root.ca.key" ] || openssl genrsa -aes256 -out ${dir}/root.ca.key 4096
+[ -f "${dir}/root.ca.key" ] || openssl genrsa \
+	-aes256 -out ${dir}/root.ca.key \
+	-passout "pass:${password}" \
+	4096
 
 [ -f "${dir}/root.ca.csr" ] || openssl req -new -config ./${home}/openssl.cnf \
 	-subj "${subject}" -days 3650 -extensions v3_ca_has_san \
-	-key ${dir}/root.ca.key -out ${dir}/root.ca.csr
+	-key ${dir}/root.ca.key -out ${dir}/root.ca.csr \
+	-passout "pass:${password}" -passin "pass:${password}"
 
 [ -f "${dir}/root.ca.cert" ] || openssl ca -config ./${home}/openssl.cnf \
 	-create_serial -selfsign -keyfile ${dir}/root.ca.key \
+	-passin "pass:${password}" \
 	-subj "${subject}" -days 3650 -extensions v3_ca_has_san \
 	-out ${dir}/root.ca.cert -infiles ${dir}/root.ca.csr
 

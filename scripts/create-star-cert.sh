@@ -39,6 +39,10 @@ subject=$(
 	| sed -e 's/^subject= //' -e 's/\/CN=[^\/,]*/\/CN='"${common_name}"'/'
 )
 
+printf "Main Ca Password []:"
+read -s password
+echo ""
+
 [ -d ${dir} ] || mkdir -p ${dir}
 
 cat > ${dir}/${file_name}.star.cnf <<-EOF
@@ -68,15 +72,20 @@ cat > ${dir}/${file_name}.star.cnf <<-EOF
 	DNS.2 = *.${common_name}
 EOF
 
-[ -f "${dir}/${file_name}.star.key" ] || openssl genrsa -aes256 -out "${dir}/${file_name}.star.key" 2048
+[ -f "${dir}/${file_name}.star.key" ] || openssl genrsa \
+	-aes256 -out "${dir}/${file_name}.star.key" \
+	-passout "pass:${password}" \
+	2048
 
 [ -f "${dir}/${file_name}.star.csr" ] || openssl req -new -config "${dir}/${file_name}.star.cnf" \
 	-key "${dir}/${file_name}.star.key" -out "${dir}/${file_name}.star.csr" \
+	-passin "pass:${password}" -passout "pass:${password}" \
 	-subj "${subject}"
 
 [ -f "${dir}/${file_name}.star.cert" ] || openssl ca -config "${home}/openssl.cnf" \
 	-cert "${home}/private/${ca_file_name}.ca.cert" \
 	-keyfile "${home}/private/${ca_file_name}.ca.key" \
+	-passin "pass:${password}" \
 	-extensions usr_cert_has_san -days 365 \
 	-out "${dir}/${file_name}.star.cert" \
 	-infiles "${dir}/${file_name}.star.csr"
@@ -98,4 +107,5 @@ fi
 [ -f "${dir}/${file_name}.star.p12" ] || openssl pkcs12 -export -name "${file_name}" \
 	-inkey "${dir}/${file_name}.star.key" -in "${dir}/${file_name}.star.cert" \
 	-certfile "${dir}/${file_name}.star.chain" \
+	-passin "pass:${password}" -passout "pass:${password}" \
 	-out "${dir}/${file_name}.star.p12"

@@ -39,17 +39,26 @@ subject=$(
 	| sed -e 's/^subject= //' -e 's/\/CN=[^\/,]*/\/CN='"${common_name}"'/'
 )
 
+printf "Main Ca Password []:"
+read -s password
+echo ""
+
 [ -d "${dir}" ] || mkdir -p "${dir}"
 
-[ -f "${dir}/${file_name}.key" ] || openssl genrsa -aes256 -out "${dir}/${file_name}.key" 2048
+[ -f "${dir}/${file_name}.key" ] || openssl genrsa \
+	-aes256 -out "${dir}/${file_name}.key" \
+	-passout "pass:${password}" \
+	2048
 
 [ -f "${dir}/${file_name}.csr" ] || openssl req -new -config "${home}/openssl.cnf" \
 	-key "${dir}/${file_name}.key" -out "${dir}/${file_name}.csr" \
+	-passin "pass:${password}" -passout "pass:${password}" \
 	-subj "${subject}"
 
 [ -f ${dir}/${file_name}.cert ] || openssl ca -config "${home}/openssl.cnf" \
 	-cert "${home}/private/${ca_file_name}.ca.cert" \
 	-keyfile "${home}/private/${ca_file_name}.ca.key" \
+	-passin "pass:${password}" \
 	-extensions usr_cert -days 365 \
 	-out "${dir}/${file_name}.cert" \
 	-infiles "${dir}/${file_name}.csr"
@@ -71,4 +80,5 @@ fi
 [ -f ${dir}/${file_name}.p12 ] || openssl pkcs12 -export -name ${file_name} \
 	-inkey ${dir}/${file_name}.key -in ${dir}/${file_name}.cert \
 	-certfile "${dir}/${file_name}.chain" \
+	-passin "pass:${password}" -passout "pass:${password}" \
 	-out "${dir}/${file_name}.p12"
