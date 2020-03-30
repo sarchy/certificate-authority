@@ -56,7 +56,7 @@ ask country "BE" "Country Name (2 letter code)"
 ask province "Limburg" "State or Province Name (full name)"
 ask city "Sint-Truiden" "Locality Name (eg, city)"
 ask organization "" "Organization Name (eg, company):"
-ask common_name "ROOT CERT G1" "Common Name (eg, YOUR name)"
+ask common_name "${organization} Root G1" "Common Name (eg, YOUR name)"
 ask password "" "Main Ca Password"
 
 domain=${1:-"${domain}"}
