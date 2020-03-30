@@ -23,13 +23,20 @@ for arg in "$@"; do
 		-cn) common_name="${value}";;
 		-alt) altnames+=("${value}");;
 
-		*)
+		--)
+			shift;
+			break;;
+
+		-*)
 			echo "Unknown Argument ${key}" >&2;
-			exit 1;
+			exit 1;;
+
+		*)
+			comomn_name="${arg}"
+			break;;
 	esac
 done
 
-common_name=${1:-"${common_name}"}
 altnames=("${common_name}" "${altnames[@]}")
 
 if [ -z "${common_name}" ]; then

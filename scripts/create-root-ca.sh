@@ -60,7 +60,6 @@ ask organization "" "Organization Name (eg, company):"
 ask common_name "${organization} Root G1" "Common Name (eg, YOUR name)"
 ask password "" "Main Ca Password"
 
-domain=${1:-"${domain}"}
 subject="/C=${country}/ST=${province}/L=${city}/O=${organization}/CN=${common_name}"
 
 [ -d "${home}" ] || mkdir "${home}";

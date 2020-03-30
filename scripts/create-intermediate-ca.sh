@@ -19,13 +19,19 @@ for arg in "$@"; do
 
 		-cn) common_name="${value}";;
 
-		*)
+		--)
+			shift;
+			break;;
+
+		-*)
 			echo "Unknown Argument ${key}" >&2;
-			exit 1;
+			exit 1;;
+
+		*)
+			common_name=${arg}
+			break;;
 	esac
 done
-
-common_name=${1:-"${common_name}"}
 
 if [ -z "${common_name}" ]; then
 	echo "No common name provided" >&2;

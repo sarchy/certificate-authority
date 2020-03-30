@@ -12,9 +12,18 @@ for arg in "$@"; do
 	case "${key}" in
 		--ca-home) home="${value}";;
 		--ca-cert) ca_name="${value}";;
-		*)
+
+		--)
+			shift;
+			break;;
+
+		-*)
 			echo "Unknown Argument ${key}" >&2;
-			exit 1;
+			exit 1;;
+
+		*)
+			ca_name="${arg}"
+			break;;
 	esac
 done
 
