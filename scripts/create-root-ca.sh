@@ -69,14 +69,7 @@ subject="/C=${country}/ST=${province}/L=${city}/O=${organization}/CN=${common_na
 [ -d "${home}/private" ] || mkdir -p "${home}/private"
 
 [ -f "${home}/index.txt" ] || touch "${home}/index.txt"
-[ -f "${home}/serial" ] || dd if=/dev/urandom bs=1 count=16 2> /dev/null | od -t x1 -An | sed -e 's/ //g' > data/serial
-
-[ -f data/v3.ext ] || cat > data/v3.ext <<-EOF
-	authorityKeyIdentifier = keyid,issuer
-	basicConstraints = CA:TRUE
-	keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
-	subjectKeyIdentifier = hash
-EOF
+[ -f "${home}/serial" ] || dd if=/dev/urandom bs=1 count=16 2> /dev/null | od -t x1 -An | sed -e 's/ //g' > "${home}//serial"
 
 [ -f "${home}/openssl.cnf" ] || cat > "${home}/openssl.cnf" <<-EOF
 	HOME                    = ./${home}
