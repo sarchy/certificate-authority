@@ -2,7 +2,7 @@
 
 home=./data
 ca_name="current"
-group="constructing"
+group="main"
 days="$(( 365 * 1 ))"
 
 common_name=""
