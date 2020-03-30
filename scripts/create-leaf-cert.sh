@@ -21,7 +21,7 @@ for arg in "$@"; do
 		--days) days="${value}";;
 
 		-cn) common_name="${value}";;
-		--alt) altnames+=("${value}");;
+		-alt) altnames+=("${value}");;
 
 		*)
 			echo "Unknown Argument ${key}" >&2;
