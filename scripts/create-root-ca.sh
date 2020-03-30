@@ -1,6 +1,12 @@
 #! /usr/bin/env bash
 
+accept_defaults=0
+
 function ask () {
+	if [ -z "${!1}" ] && [[ "${accept_defaults}" -eq "1" ]]; then
+		eval ${1}=\${2};
+	fi
+
 	if ! [ -z "${!1}" ]; then return; fi
 
 	printf "${3} [${2}]: ";
@@ -39,6 +45,7 @@ for arg in "$@"; do
 		--domain) domain="${value}";;
 		--ca-home) home="${value}";;
 		--days) days="${value}";;
+		--accept) accept_defaults=1;;
 
 		-c) country="${value}";;
 		-st) province="${value}";;
