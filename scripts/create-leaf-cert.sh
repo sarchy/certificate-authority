@@ -44,6 +44,11 @@ if [ -z "${common_name}" ]; then
 	exit 1;
 fi
 
+if [ "${group}" = "private" ]; then
+	echo "private is a reserved group name" >&2;
+	exit 1;
+fi
+
 file_name=$(echo ${common_name} | sed -E -e 's/( |\.)/_/g')
 ca_file_name=$(echo ${ca_name} | sed -E -e 's/( |\.)/_/g')
 dir="${home}/${group}"
