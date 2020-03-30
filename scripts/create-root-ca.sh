@@ -103,6 +103,7 @@ EOF
 	crldir           = \$dir/crl
 	crlnumber        = \$dir/crlnumber               # the current crl number
 	crl              = \$crldir/crl.pem              # The current CRL
+	unique_subject   = no                            # Allow resigning of existing 'dn's
 
 	# By default we use "user certificate" extensions when signing
 	x509_extensions  = usr_cert                      # The extentions to add to the cert
