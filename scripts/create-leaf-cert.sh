@@ -3,6 +3,7 @@
 home=./data
 ca_name="current"
 group="constructing"
+days="$(( 365 * 1 ))"
 
 common_name=""
 altnames=()
@@ -17,6 +18,7 @@ for arg in "$@"; do
 		--ca-home) home="${value}";;
 		--ca-cert) ca_name="${value}";;
 		--group) group="${value}";;
+		--days) days="${value}";;
 
 		-cn) common_name="${value}";;
 		--alt) altnames+=("${value}");;
@@ -99,7 +101,7 @@ EOF
 	-cert "${home}/private/${ca_file_name}.ca.cert" \
 	-keyfile "${home}/private/${ca_file_name}.ca.key" \
 	-passin "pass:${password}" \
-	-extensions usr_cert_has_san -days 365 \
+	-extensions usr_cert_has_san -days "${days}" \
 	-out "${dir}/${file_name}.cert" \
 	-infiles "${dir}/${file_name}.csr"
 

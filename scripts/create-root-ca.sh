@@ -20,6 +20,7 @@ function ask () {
 
 domain=example.com
 home=./data
+days=$(( 365 * 10 ))
 
 country=""
 province=""
@@ -36,6 +37,7 @@ for arg in "$@"; do
 	case "${key}" in
 		--domain) domain="${value}";;
 		--ca-home) home="${value}";;
+		--days) days="${value}";;
 
 		-c) country="${value}";;
 		-st) province="${value}";;
@@ -280,14 +282,14 @@ dir="${home}/private"
 	4096
 
 [ -f "${dir}/root.ca.csr" ] || openssl req -new -config ./${home}/openssl.cnf \
-	-subj "${subject}" -days 3650 -extensions v3_ca_has_san \
+	-subj "${subject}" -days "${days}" -extensions v3_ca_has_san \
 	-key ${dir}/root.ca.key -out ${dir}/root.ca.csr \
 	-passout "pass:${password}" -passin "pass:${password}"
 
 [ -f "${dir}/root.ca.cert" ] || openssl ca -config ./${home}/openssl.cnf \
 	-create_serial -selfsign -keyfile ${dir}/root.ca.key \
 	-passin "pass:${password}" \
-	-subj "${subject}" -days 3650 -extensions v3_ca_has_san \
+	-subj "${subject}" -days ${days} -extensions v3_ca_has_san \
 	-out ${dir}/root.ca.cert -infiles ${dir}/root.ca.csr
 
 ln -s ./root.ca.cert "${dir}/current.ca.cert"

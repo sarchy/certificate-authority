@@ -2,6 +2,7 @@
 
 home=./data
 ca_name="current"
+days=$(( 365 * 5 ))
 
 common_name=""
 
@@ -14,6 +15,7 @@ for arg in "$@"; do
 	case "${key}" in
 		--ca-home) home="${value}";;
 		--ca-cert) ca_name="${value}";;
+		--days) days="${value}";;
 
 		-cn) common_name="${value}";;
 
@@ -59,6 +61,6 @@ echo ""
 	-cert "${home}/private/${ca_file_name}.ca.cert" \
 	-keyfile "${home}/private/${ca_file_name}.ca.key" \
 	-passin "pass:${password}" \
-	-extensions v3_ca_has_san -days 1825 \
+	-extensions v3_ca_has_san -days "${days}" \
 	-out "${dir}/${file_name}.ca.cert" \
 	-infiles "${dir}/${file_name}.ca.csr"
