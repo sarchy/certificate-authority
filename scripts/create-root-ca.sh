@@ -6,6 +6,7 @@ function ask () {
 	printf "${3} [${2}]: ";
 	if [ "${1}" = "password" ]; then
 		read -s "${1}";
+		echo "";
 	else
 		read "${1}";
 	fi
